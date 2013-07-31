@@ -2,3 +2,9 @@
 build
 .kde*
 *kdev4
+shuffle.cpp
+.coverage
+*egg-info
+__pycache__
+*.so
+*.pyc
