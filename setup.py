@@ -16,7 +16,7 @@ DISTNAME = 'shuffle'
 LICENSE = 'BSD'
 AUTHOR = "Tiago Requeijo"
 EMAIL = "tiago.requeijo.dev@gmail.com"
-URL = ""
+URL = "https://github.com/tr11/shuffle"
 DOWNLOAD_URL = ''
 #CLASSIFIERS = [
     #'Development Status :: 4 - Beta',
@@ -72,14 +72,15 @@ setup(name=DISTNAME,
       packages = ['shuffle',
                  ],
       ext_modules = [Extension("shuffle.lib", 
-                             ["shuffle.pyx"],
-                             language='c++'
-                             )],
+                               ["shuffle.pyx"],
+                               language='c++',
+                               extra_compile_args= ['--std=c++0x', '-Wall', '-O3', '-DSHUFFLE_MAX_DATATYPE_SIZE=8']
+                               )],
       include_dirs = [numpy.get_include()],
       maintainer_email=EMAIL,
       description=DESCRIPTION,
       license=LICENSE,
-      #url=URL,
+      url=URL,
       #download_url=DOWNLOAD_URL,
       #long_description=LONG_DESCRIPTION,
       #classifiers=CLASSIFIERS,

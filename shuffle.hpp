@@ -4,35 +4,40 @@
 #include <cstddef>
 #include <cstring>
 #include <stdexcept>
-#include <boost/preprocessor/cat.hpp>
 
-#define DEFAULT_BLOCK_SIZE 1024
+#ifndef SHUFFLE_DEFAULT_BLOCK_SIZE
+  #define SHUFFLE_DEFAULT_BLOCK_SIZE 1024
+#endif
+
+#ifndef SHUFFLE_MAX_DATATYPE_SIZE
+  #define SHUFFLE_MAX_DATATYPE_SIZE 64 /* 8 x 8bytes */
+#endif
 
 namespace Shuffle {
 namespace detail {
 
 template<uint8_t i>
-void unroll_shuffle(const unsigned char* data, unsigned char* target, size_t block_start, uint16_t per_block, uint8_t dtypesize, uint32_t block_size, size_t j) {
+inline void unroll_shuffle(const unsigned char* data, unsigned char* target, size_t block_start, uint16_t per_block, uint8_t dtypesize, uint32_t block_size, size_t j) {
   target[block_start + ((j+1)*block_size + j - i*per_block) % block_size] = data[block_start + j*dtypesize + (dtypesize-i)];
   unroll_shuffle<i-1>(data, target, block_start, per_block, dtypesize, block_size, j);
 }
 template<>
-void unroll_shuffle<0>(const unsigned char* data, unsigned char* target, size_t block_start, uint16_t per_block, uint8_t dtypesize, uint32_t block_size, size_t j) { }
+inline void unroll_shuffle<0>(const unsigned char* data, unsigned char* target, size_t block_start, uint16_t per_block, uint8_t dtypesize, uint32_t block_size, size_t j) { }
 
 template<uint8_t i>
-void unroll_unshuffle(const unsigned char* data, unsigned char* target, size_t block_start, uint16_t per_block, uint8_t dtypesize, uint32_t block_size, size_t j) {
+inline void unroll_unshuffle(const unsigned char* data, unsigned char* target, size_t block_start, uint16_t per_block, uint8_t dtypesize, uint32_t block_size, size_t j) {
   target[block_start + j*dtypesize + (dtypesize-i)] = data[block_start + ((j+1)*block_size + j - i*per_block) % block_size];
   unroll_unshuffle<i-1>(data, target, block_start, per_block, dtypesize, block_size, j);
 }
 template<>
-void unroll_unshuffle<0>(const unsigned char* data, unsigned char* target, size_t block_start, uint16_t per_block, uint8_t dtypesize, uint32_t block_size, size_t j) { }
+inline void unroll_unshuffle<0>(const unsigned char* data, unsigned char* target, size_t block_start, uint16_t per_block, uint8_t dtypesize, uint32_t block_size, size_t j) { }
 
 }
 
 
 // SHUFFLE -- TEMPLATED VERSION//
 template<uint8_t DT> 
-void shuffle(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
+void shuffle(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t blocksize=SHUFFLE_DEFAULT_BLOCK_SIZE) {
   // variables
   blocksize -= blocksize % DT;
   if(!blocksize)
@@ -59,7 +64,7 @@ template<>
 void shuffle<0>(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t blocksize) { memcpy(target, data, data_sz); }
 
 // SHUFFLE -- GENERAL VERSION//
-void shuffle(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t datatype_size, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
+void shuffle(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t datatype_size, uint16_t blocksize=SHUFFLE_DEFAULT_BLOCK_SIZE) {
   // variables
   blocksize -= blocksize % datatype_size;
   if(!blocksize)
@@ -82,7 +87,7 @@ void shuffle(const unsigned char* data, unsigned char* target, size_t data_sz, u
 }
 
 template<typename T>
-T shuffle(const T& data, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
+T shuffle(const T& data, uint16_t blocksize=SHUFFLE_DEFAULT_BLOCK_SIZE) {
   size_t datatype_size = sizeof(typename T::value_type);
   size_t sz = data.size();
   // allocate target
@@ -102,15 +107,21 @@ T shuffle(const T& data, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
     case 8:
       shuffle<8>(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, blocksize);
       break;
+    #if SHUFFLE_MAX_DATATYPE_SIZE >= 16
     case 16:
       shuffle<16>(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, blocksize);
       break;
+    #endif
+    #if SHUFFLE_MAX_DATATYPE_SIZE >= 32
     case 32:
       shuffle<32>(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, blocksize);
       break;
+    #endif
+    #if SHUFFLE_MAX_DATATYPE_SIZE >= 64
     case 64:
       shuffle<64>(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, blocksize);
       break;
+    #endif
     default:
       shuffle(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, datatype_size, blocksize);
   }
@@ -121,7 +132,7 @@ T shuffle(const T& data, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
 
 // UNSHUFFLE -- TEMPLATED VERSION//
 template<uint8_t DT> 
-void unshuffle(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
+void unshuffle(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t blocksize=SHUFFLE_DEFAULT_BLOCK_SIZE) {
   // variables
   blocksize -= blocksize % DT;
   if(!blocksize)
@@ -148,7 +159,7 @@ template<>
 void unshuffle<0>(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t blocksize) { memcpy(target, data, data_sz); }
 
 // UNSHUFFLE -- GENERAL VERSION//
-void unshuffle(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t datatype_size, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
+void unshuffle(const unsigned char* data, unsigned char* target, size_t data_sz, uint16_t datatype_size, uint16_t blocksize=SHUFFLE_DEFAULT_BLOCK_SIZE) {
   // variables
   blocksize -= blocksize % datatype_size;
   if(!blocksize)
@@ -171,7 +182,7 @@ void unshuffle(const unsigned char* data, unsigned char* target, size_t data_sz,
 }
 
 template<typename T>
-T unshuffle(const T& data, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
+T unshuffle(const T& data, uint16_t blocksize=SHUFFLE_DEFAULT_BLOCK_SIZE) {
   size_t datatype_size = sizeof(typename T::value_type);
   size_t sz = data.size();
   // allocate target
@@ -191,36 +202,26 @@ T unshuffle(const T& data, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
     case 8:
       unshuffle<8>(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, blocksize);
       break;
+    #if SHUFFLE_MAX_DATATYPE_SIZE >= 16
     case 16:
       unshuffle<16>(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, blocksize);
       break;
+    #endif
+    #if SHUFFLE_MAX_DATATYPE_SIZE >= 32
     case 32:
       unshuffle<32>(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, blocksize);
       break;
+    #endif
+    #if SHUFFLE_MAX_DATATYPE_SIZE >= 64
     case 64:
       unshuffle<64>(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, blocksize);
       break;
+    #endif
     default:
       unshuffle(reinterpret_cast<const unsigned char*>(data.data()), reinterpret_cast<unsigned char*>(result.data()), sz, datatype_size, blocksize);
   }
   return result;
 }
-
-
-
-
-
-// template<int8_t DT>
-// std::vector<unsigned char> unshuffle(const std::vector<unsigned char>& data, uint16_t blocksize=DEFAULT_BLOCK_SIZE) {
-//   size_t sz = data.size();
-//   // allocate target
-//   std::vector<unsigned char> result(sz);
-//   // call pointer version
-//   unshuffle<DT>(data.data(), result.data(), sz, blocksize);
-//   return result;
-// }
-
-
 
 
 }

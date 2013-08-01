@@ -1,5 +1,5 @@
 *~
-build
+build*
 .kde*
 *kdev4
 shuffle.cpp
@@ -8,3 +8,4 @@ shuffle.cpp
 __pycache__
 *.so
 *.pyc
+dist

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy
-import snappy
 cimport numpy
 from libc.stdint cimport uint16_t, uint8_t
 
@@ -62,10 +61,5 @@ def unshuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024):
     unshuffle_p(dbuff, tbuff, sz, dtypesize, blocksize)
     return target
 
-def snappy_shuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024):
-    return snappy.compress(shuffle(data, dtypesize, blocksize))
-
-def snappy_unshuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024):
-    return unshuffle(snappy.decompress(data), dtypesize, blocksize)
     
     
