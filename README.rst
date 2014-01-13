@@ -1,6 +1,9 @@
 shuffle
 =======
 
+.. image:: https://travis-ci.org/tr11/shuffle.png?branch=master
+   :target: https://travis-ci.org/tr11/shuffle
+
 Shuffle if a small C++ library with Python bindings designed to shuffle an array in a similar manner to what the Shuffle filter in the HDF5 file format does.
 This is particularly useful when compressing arrays of numerical values of similar magnitudes.
 
