@@ -9,3 +9,6 @@ __pycache__
 *.so
 *.pyc
 dist
+.ropeproject
+.eric*
+*e4p
