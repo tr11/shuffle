@@ -17,6 +17,7 @@ cdef extern from "shuffle.hpp" namespace "Shuffle":
                                            uint16_t dtypesize,
                                            uint16_t blocksize)
 
+
 def shuffle_ndarray(numpy.ndarray data, blocksize=1024):
     # dtype size
     sz = data.dtype.itemsize
@@ -30,7 +31,8 @@ def shuffle_ndarray(numpy.ndarray data, blocksize=1024):
     shuffle_p(dbuff, tbuff, len(data_buff), data.dtype.itemsize, blocksize)
     return target_buff.view(dtype=data.dtype)
 
-def shuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024):
+
+def shuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024)  -> bytes:
     cdef long sz = len(data) 
     target = bytes(bytearray(sz))
     cdef unsigned char* dbuff = <unsigned char*> data
@@ -38,7 +40,8 @@ def shuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024):
     # shuffle
     shuffle_p(dbuff, tbuff, sz, dtypesize, blocksize)
     return target
-        
+
+
 def unshuffle_ndarray(numpy.ndarray data, blocksize=1024):
     # dtype size
     sz = data.dtype.itemsize
@@ -52,7 +55,8 @@ def unshuffle_ndarray(numpy.ndarray data, blocksize=1024):
     unshuffle_p(dbuff, tbuff, len(data_buff), data.dtype.itemsize, blocksize)
     return target_buff.view(dtype=data.dtype)
 
-def unshuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024):
+
+def unshuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024) -> bytes:
     cdef long sz = len(data) 
     target = bytes(bytearray(sz))
     cdef unsigned char* dbuff = <unsigned char*> data
@@ -60,6 +64,3 @@ def unshuffle(bytes data, uint16_t dtypesize=32, uint16_t blocksize=1024):
     # shuffle
     unshuffle_p(dbuff, tbuff, sz, dtypesize, blocksize)
     return target
-
-    
-    

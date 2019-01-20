@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE(shuffle_test_12) {
   
   
   
-  // oher 
+  // other
   {
     std::vector<sz80> msg(5000);
     for(int i=0; i<5000; ++i) {

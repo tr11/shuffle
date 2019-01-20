@@ -1,0 +1,9 @@
+[run]
+branch = True
+plugins = Cython.Coverage
+omit =
+    .venv*
+    tests/*
+
+[html]
+directory = cover
