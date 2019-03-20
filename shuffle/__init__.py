@@ -3,7 +3,7 @@
 Shuffle module.
 """
 
-__version__ = (0, 0, 2)
+__version__ = (0, 2, 0)
 from .lib import shuffle, unshuffle, shuffle_ndarray, unshuffle_ndarray     # noqa: F401
 
 __all__ = [
